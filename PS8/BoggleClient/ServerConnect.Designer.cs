@@ -40,59 +40,66 @@
             // 
             // serverTextBox
             // 
-            this.serverTextBox.Location = new System.Drawing.Point(207, 62);
+            this.serverTextBox.Location = new System.Drawing.Point(155, 50);
+            this.serverTextBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.serverTextBox.Name = "serverTextBox";
-            this.serverTextBox.Size = new System.Drawing.Size(213, 22);
+            this.serverTextBox.Size = new System.Drawing.Size(161, 20);
             this.serverTextBox.TabIndex = 0;
             // 
             // serverLabel
             // 
             this.serverLabel.AutoSize = true;
-            this.serverLabel.Location = new System.Drawing.Point(147, 65);
+            this.serverLabel.Location = new System.Drawing.Point(110, 53);
+            this.serverLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.serverLabel.Name = "serverLabel";
-            this.serverLabel.Size = new System.Drawing.Size(54, 17);
+            this.serverLabel.Size = new System.Drawing.Size(41, 13);
             this.serverLabel.TabIndex = 1;
             this.serverLabel.Text = "Server:";
             this.serverLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // userNameTextBox
             // 
-            this.userNameTextBox.Location = new System.Drawing.Point(207, 129);
+            this.userNameTextBox.Location = new System.Drawing.Point(155, 105);
+            this.userNameTextBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.userNameTextBox.Name = "userNameTextBox";
-            this.userNameTextBox.Size = new System.Drawing.Size(213, 22);
+            this.userNameTextBox.Size = new System.Drawing.Size(161, 20);
             this.userNameTextBox.TabIndex = 2;
             // 
             // lengthTextBox
             // 
-            this.lengthTextBox.Location = new System.Drawing.Point(207, 188);
+            this.lengthTextBox.Location = new System.Drawing.Point(155, 153);
+            this.lengthTextBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.lengthTextBox.Name = "lengthTextBox";
-            this.lengthTextBox.Size = new System.Drawing.Size(213, 22);
+            this.lengthTextBox.Size = new System.Drawing.Size(161, 20);
             this.lengthTextBox.TabIndex = 3;
             // 
             // nameLabel
             // 
             this.nameLabel.AutoSize = true;
-            this.nameLabel.Location = new System.Drawing.Point(118, 132);
+            this.nameLabel.Location = new System.Drawing.Point(88, 107);
+            this.nameLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.nameLabel.Name = "nameLabel";
-            this.nameLabel.Size = new System.Drawing.Size(83, 17);
+            this.nameLabel.Size = new System.Drawing.Size(63, 13);
             this.nameLabel.TabIndex = 4;
             this.nameLabel.Text = "User Name:";
             // 
             // lengthLabel
             // 
             this.lengthLabel.AutoSize = true;
-            this.lengthLabel.Location = new System.Drawing.Point(82, 191);
+            this.lengthLabel.Location = new System.Drawing.Point(62, 155);
+            this.lengthLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lengthLabel.Name = "lengthLabel";
-            this.lengthLabel.Size = new System.Drawing.Size(119, 17);
+            this.lengthLabel.Size = new System.Drawing.Size(88, 13);
             this.lengthLabel.TabIndex = 5;
             this.lengthLabel.Text = "Game Length (s):";
             // 
             // cancelButton
             // 
             this.cancelButton.Enabled = false;
-            this.cancelButton.Location = new System.Drawing.Point(345, 274);
+            this.cancelButton.Location = new System.Drawing.Point(259, 223);
+            this.cancelButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(75, 23);
+            this.cancelButton.Size = new System.Drawing.Size(56, 19);
             this.cancelButton.TabIndex = 6;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
@@ -100,9 +107,10 @@
             // 
             // startButton
             // 
-            this.startButton.Location = new System.Drawing.Point(121, 274);
+            this.startButton.Location = new System.Drawing.Point(91, 223);
+            this.startButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.startButton.Name = "startButton";
-            this.startButton.Size = new System.Drawing.Size(161, 23);
+            this.startButton.Size = new System.Drawing.Size(121, 19);
             this.startButton.TabIndex = 7;
             this.startButton.Text = "Search for Game";
             this.startButton.UseVisualStyleBackColor = true;
@@ -110,9 +118,9 @@
             // 
             // ServerConnect
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(547, 354);
+            this.ClientSize = new System.Drawing.Size(410, 288);
             this.Controls.Add(this.startButton);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.lengthLabel);
@@ -121,8 +129,10 @@
             this.Controls.Add(this.userNameTextBox);
             this.Controls.Add(this.serverLabel);
             this.Controls.Add(this.serverTextBox);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "ServerConnect";
             this.Text = "ServerConnect";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ServerConnect_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 

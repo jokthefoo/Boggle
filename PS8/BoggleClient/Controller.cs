@@ -2,21 +2,44 @@
 using System;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace BoggleClient
 {
     class Controller
     {
+        /// <summary>
+        /// This is the connection window, Allows you to chose server and name and time
+        /// </summary>
         private ServerConnect connectWindow;
+        /// <summary>
+        /// This is the main window
+        /// </summary>
         private BoggleClient mainWindow;
+        /// <summary>
+        /// This is the server address
+        /// </summary>
         private string server;
+        /// <summary>
+        /// This is an object that holds information about the current user
+        /// </summary>
         private User user;
+        /// <summary>
+        /// This is an object that holds information about the current game
+        /// </summary>
         private Game game;
+        /// <summary>
+        /// Used to cancel requests
+        /// </summary>
         private bool Cancel;
+        /// <summary>
+        /// Used for setup
+        /// </summary>
         private bool setup;
 
+        /// <summary>
+        /// This is the controller for the GUI, needs a main window and the server connect window
+        /// </summary>
         public Controller(ServerConnect connectWindow, BoggleClient mainWindow)
         {
             this.connectWindow = connectWindow;
@@ -27,10 +50,24 @@ namespace BoggleClient
             mainWindow.inputWordEvent += HandleWordInput;
             mainWindow.timerEvent += HandleTimer;
             mainWindow.newGameEvent += HandleNewGame;
+            mainWindow.helpEvent += HandleHelpEvent;
         }
 
+        /// <summary>
+        /// Handles when help event is fired
+        /// </summary>
+        private void HandleHelpEvent()
+        {
+            mainWindow.Message("Press the new game button to disconnect from this game and have the option to connect to another. \n To send a word type it into the input box and press enter.\n To exit completely use the X in the corner on the main window.");
+        }
+
+        /// <summary>
+        /// This handles when the new game button is clicked
+        /// </summary>
         private void HandleNewGame()
         {
+            mainWindow.Player2WordsPlayed = "";
+            mainWindow.Player1WordsPlayed = "";
             Cancel = true;
             mainWindow.TimerStatus(false);
             connectWindow.StartButtonStatus = true;
@@ -38,6 +75,9 @@ namespace BoggleClient
             connectWindow.Show();
         }
 
+        /// <summary>
+        /// This is the timer that asks the server for info every second while playing or searching for a game
+        /// </summary>
         private async void HandleTimer()
         {
             Task<Game> statusTask = new Task<Game>(() => GetStatus("yes"));
@@ -80,7 +120,7 @@ namespace BoggleClient
                         mainWindow.UpdateP1ScoreBoard = game.Player1.Score.ToString();
                         mainWindow.UpdateP2ScoreBoard = game.Player2.Score.ToString();
                         mainWindow.UpdateTime = game.TimeLeft.ToString();
-                        var pat = new string[] { "[", "]", "{", "}", ",", "\"" };
+                        var pat = new string[] { "[", "]", "{", "}", ",", "\""};
                         foreach (var c in pat)
                         {
                             game.Player1.WordsPlayed = game.Player1.WordsPlayed.Replace(c, "");
@@ -94,6 +134,9 @@ namespace BoggleClient
             }
         }
 
+        /// <summary>
+        /// This handles when a word is sent
+        /// </summary>
         private async void HandleWordInput(string word)
         {
             user.Word = word;
@@ -102,6 +145,9 @@ namespace BoggleClient
             user.WordScore = (await wordTask).WordScore;
         }
 
+        /// <summary>
+        /// Handles when you cancel a request
+        /// </summary>
         private void HandleCancelClick()
         {
             Cancel = true;
@@ -111,6 +157,9 @@ namespace BoggleClient
             connectWindow.CancelButtonStatus = false;
         }
 
+        /// <summary>
+        /// This handles when you start searching for a game
+        /// </summary>
         private async void HandleStartClick(string server, string name, int time)
         {
             user = new User();
@@ -153,6 +202,10 @@ namespace BoggleClient
             mainWindow.TimerStatus(true);
         }
 
+        /// <summary>
+        /// This is used to create an HTTP client for requests
+        /// </summary>
+        /// <returns></returns>
         public HttpClient CreateClient()
         {
             HttpClient client = new HttpClient();
@@ -160,6 +213,10 @@ namespace BoggleClient
             return client;
         }
 
+        /// <summary>
+        /// This handles the POST request to create a user
+        /// </summary>
+        /// <returns></returns>
         private User PostUser()
         {
             User tempUser = new User();
@@ -189,6 +246,10 @@ namespace BoggleClient
             return tempUser;
         }
 
+        /// <summary>
+        /// This handles the POST request to join a game
+        /// </summary>
+        /// <returns></returns>
         public User PostJoin()
         {
             User tempUser = new User();
@@ -219,6 +280,9 @@ namespace BoggleClient
             return tempUser;
         }
 
+        /// <summary>
+        /// This handles cancelling a request
+        /// </summary>
         public void PutCancelJoin()
         {
             using (HttpClient client = CreateClient())
@@ -237,6 +301,10 @@ namespace BoggleClient
             }
         }
 
+        /// <summary>
+        /// This handles the PUT request to play a word
+        /// </summary>
+        /// <returns></returns>
         public User PutPlayWord()
         {
             User tempUser = new User();
@@ -260,6 +328,11 @@ namespace BoggleClient
             return tempUser;
         }
 
+        /// <summary>
+        /// This handles getting the status of a game
+        /// </summary>
+        /// <param name="brief"></param>
+        /// <returns></returns>
         public Game GetStatus(string brief)
         {
             Game tempGame = new Game();

@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace BoggleClient
 {
+    /// <summary>
+    /// Object to hold info about the current game
+    /// </summary>
     class Game
     {
         public Game()

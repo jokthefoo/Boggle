@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace BoggleClient
 {
+    /// <summary>
+    /// Object to hold info about the user
+    /// </summary>
     class User
     {
         public string Nickname { get; set; }

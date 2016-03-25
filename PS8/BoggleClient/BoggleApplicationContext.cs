@@ -7,6 +7,9 @@ using System.Windows.Forms;
 
 namespace BoggleClient
 {
+    /// <summary>
+    /// This is used to handle the two seperate windows
+    /// </summary>
     class BoggleApplicationContext : ApplicationContext
     {
         private static BoggleApplicationContext context;
