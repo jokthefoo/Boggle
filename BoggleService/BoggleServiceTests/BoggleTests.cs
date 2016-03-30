@@ -64,6 +64,9 @@ namespace Boggle
 
         private RestTestClient client = new RestTestClient("http://localhost:60000/");
 
+        /// <summary>
+        /// Tests creating a user
+        /// </summary>
         [TestMethod]
         public void TestCreateUser1()
         {
@@ -71,6 +74,9 @@ namespace Boggle
             Assert.AreEqual(Forbidden, r.Status);
         }
 
+        /// <summary>
+        /// Tests creating a user
+        /// </summary>
         [TestMethod]
         public void TestCreateUser2()
         {
@@ -79,6 +85,9 @@ namespace Boggle
             Assert.AreEqual(36, r.Data.Length);
         }
 
+        /// <summary>
+        /// Tests creating a user
+        /// </summary>
         [TestMethod]
         public void TestCreateUser3()
         {
@@ -86,6 +95,9 @@ namespace Boggle
             Assert.AreEqual(Forbidden, r.Status);
         }
 
+        /// <summary>
+        /// Tests joining a game
+        /// </summary>
         [TestMethod]
         public void TestJoinGame1()
         {
@@ -98,6 +110,9 @@ namespace Boggle
             Assert.AreEqual("0", r2.Data);
         }
 
+        /// <summary>
+        /// Tests joining a game
+        /// </summary>
         [TestMethod]
         public void TestJoinGame2()
         {
@@ -110,6 +125,9 @@ namespace Boggle
         }
 
 
+        /// <summary>
+        /// Tests joining a game
+        /// </summary>
         [TestMethod]
         public void TestJoinGame3()
         {
@@ -121,6 +139,9 @@ namespace Boggle
             Assert.AreEqual(Forbidden, r2.Status);
         }
 
+        /// <summary>
+        /// Tests joining a game
+        /// </summary>
         [TestMethod]
         public void TestJoinGame4()
         {
@@ -139,6 +160,9 @@ namespace Boggle
             Assert.AreEqual(Conflict, r4.Status);
         }
 
+        /// <summary>
+        /// Tests joining a game
+        /// </summary>
         [TestMethod]
         public void TestJoinGame5()
         {
@@ -146,12 +170,15 @@ namespace Boggle
 
             Response r = client.DoPostAsync("/users", "Testing").Result;
             test.UserToken = r.Data;
-            test.TimeLimit = 50;
+            test.TimeLimit = 5;
             Response r2 = client.DoPostAsync("/games", test).Result;
 
             Assert.AreEqual(Created, r2.Status);
         }
 
+        /// <summary>
+        /// Tests cancelling joining a game
+        /// </summary>
         [TestMethod]
         public void TestCancelJoin1()
         {
@@ -159,7 +186,7 @@ namespace Boggle
 
             Response r = client.DoPostAsync("/users", "Testing").Result;
             test.UserToken = r.Data;
-            test.TimeLimit = 50;
+            test.TimeLimit = 5;
             Response r2 = client.DoPostAsync("/games", test).Result;
 
             Response r3 = client.DoPutAsync(r.Data, "/games").Result;
@@ -167,6 +194,9 @@ namespace Boggle
             Assert.AreEqual(OK, r3.Status);
         }
 
+        /// <summary>
+        /// Tests cancelling joining a game
+        /// </summary>
         [TestMethod]
         public void TestCancelJoin2()
         {
@@ -174,13 +204,16 @@ namespace Boggle
 
             Response r = client.DoPostAsync("/users", "Testing").Result;
             test.UserToken = r.Data;
-            test.TimeLimit = 50;
+            test.TimeLimit = 5;
             Response r2 = client.DoPostAsync("/games", test).Result;
 
             Response r3 = client.DoPutAsync("invalid usertoken", "/games").Result;
             Assert.AreEqual(Forbidden, r3.Status);
         }
 
+        /// <summary>
+        /// Tests playing words in a game
+        /// </summary>
         [TestMethod]
         public void TestPlayWord1()
         {
@@ -188,7 +221,7 @@ namespace Boggle
 
             Response r = client.DoPostAsync("/users", "Testing").Result;
             test.UserToken = r.Data;
-            test.TimeLimit = 50;
+            test.TimeLimit = 5;
             Response r2 = client.DoPostAsync("/games", test).Result;
 
             Assert.AreEqual(Created, r2.Status);
@@ -204,6 +237,9 @@ namespace Boggle
             Assert.AreEqual(Forbidden, r4.Status);
         }
 
+        /// <summary>
+        /// Tests playing words in a game
+        /// </summary>
         [TestMethod]
         public void TestPlayWord2()
         {
@@ -211,7 +247,7 @@ namespace Boggle
 
             Response r = client.DoPostAsync("/users", "Testing").Result;
             test.UserToken = r.Data;
-            test.TimeLimit = 50;
+            test.TimeLimit = 5;
             Response r2 = client.DoPostAsync("/games", test).Result;
 
             test.Word = "top";
@@ -221,6 +257,9 @@ namespace Boggle
             Assert.AreEqual(Conflict, r4.Status);
         }
 
+        /// <summary>
+        /// Tests getting the game status
+        /// </summary>
         [TestMethod]
         public void TestGameStatus1()
         {
@@ -228,14 +267,16 @@ namespace Boggle
 
             Response r = client.DoPostAsync("/users", "Testing").Result;
             test.UserToken = r.Data;
-            test.TimeLimit = 50;
+            test.TimeLimit = 5;
             Response r2 = client.DoPostAsync("/games", test).Result;
 
             Response r1 = client.DoGetAsync("/games/" + r2.ToString(), "no").Result;
 
             Assert.AreEqual(Forbidden, r1.Status);
         }
-
+        /// <summary>
+        /// Tests getting the game status
+        /// </summary>
         [TestMethod]
         public void TestGameStatus2()
         {
@@ -243,7 +284,7 @@ namespace Boggle
 
             Response r = client.DoPostAsync("/users", "Testing").Result;
             test.UserToken = r.Data;
-            test.TimeLimit = 50;
+            test.TimeLimit = 5;
             Response r2 = client.DoPostAsync("/games", test).Result;
 
             Response r1 = client.DoGetAsync("/games/2", "no").Result;
@@ -251,7 +292,9 @@ namespace Boggle
             Assert.AreEqual(OK, r1.Status);
             Assert.AreEqual("active", r1.Data.GameState.ToString());
         }
-
+        /// <summary>
+        /// Tests getting the game status
+        /// </summary>
         [TestMethod]
         public void TestGameStatus3()
         {
@@ -259,7 +302,7 @@ namespace Boggle
 
             Response r = client.DoPostAsync("/users", "Testing").Result;
             test.UserToken = r.Data;
-            test.TimeLimit = 50;
+            test.TimeLimit = 5;
             Response r2 = client.DoPostAsync("/games", test).Result;
 
             Response r1 = client.DoGetAsync("/games/2", "yes").Result;
@@ -268,6 +311,9 @@ namespace Boggle
             Assert.AreEqual("active", r1.Data.GameState.ToString());
         }
 
+        /// <summary>
+        /// Tests getting the game status
+        /// </summary>
         [TestMethod]
         public void TestGameStatus4()
         {
@@ -275,7 +321,7 @@ namespace Boggle
 
             Response r = client.DoPostAsync("/users", "Testing").Result;
             test.UserToken = r.Data;
-            test.TimeLimit = 50;
+            test.TimeLimit = 5;
             Response r2 = client.DoPostAsync("/games", test).Result;
 
             Response r1 = client.DoGetAsync("/games/" + r2.Data + "?Brief=yes").Result;
@@ -286,8 +332,16 @@ namespace Boggle
             Response r3 = client.DoGetAsync("/games/4?Brief=yes").Result;
 
             Assert.AreEqual("active", r3.Data.GameState.ToString());
+
+
+            r = client.DoPostAsync("/users", "Test").Result;
+            test.UserToken = r.Data;
+            r2 = client.DoPostAsync("/games", test).Result;
         }
 
+        /// <summary>
+        /// Tests playing words in a game
+        /// </summary>
         [TestMethod]
         public void TestPlayWord3()
         {
@@ -298,6 +352,12 @@ namespace Boggle
             test.TimeLimit = 120;
 
             Response r2 = client.DoPostAsync("/games", test).Result;
+
+            Response r5 = client.DoPostAsync("/users", "Testing2").Result;
+            test.UserToken = r5.Data;
+            test.TimeLimit = 120;
+
+            Response r6 = client.DoPostAsync("/games", test).Result;
 
             Response r3 = client.DoGetAsync("/games/" + r2.Data).Result;
 
@@ -319,15 +379,20 @@ namespace Boggle
                 }
             }
 
-            test2.Word = "test";
+            client.DoPutAsync(test2, "/games/" + r2.Data);
 
-            Response r1 = client.DoPutAsync(test2, "/games/" + r2.Data).Result;
+            test2.UserToken = r5.Data;
+            client.DoPutAsync(test2, "/games/" + r2.Data);
+            client.DoPutAsync(test2, "/games/" + r2.Data);
 
-            Response r5 = client.DoGetAsync("/games/0").Result;
+            Response r7 = client.DoGetAsync("/games/0").Result;
 
-            Assert.AreEqual(OK, r1.Status);
+            //Assert.AreEqual(OK, r1.Status);
         }
 
+        /// <summary>
+        /// Tests playing words in a game
+        /// </summary>
         [TestMethod]
         public void TestPlayWord4()
         {
@@ -335,7 +400,7 @@ namespace Boggle
 
             Response r = client.DoPostAsync("/users", "Tester").Result;
             test.UserToken = r.Data;
-            test.TimeLimit = 120;
+            test.TimeLimit = 5;
 
             Response r1 = client.DoPostAsync("/games", test).Result;
             Assert.AreEqual(Accepted, r1.Status);
@@ -343,7 +408,7 @@ namespace Boggle
 
             Response r2 = client.DoPostAsync("/users", "Tester").Result;
             test.UserToken = r2.Data;
-            test.TimeLimit = 120;
+            test.TimeLimit = 5;
 
             Response r3 = client.DoPostAsync("/games", test).Result;
             Assert.AreEqual(Created, r3.Status);
@@ -353,15 +418,20 @@ namespace Boggle
             test.UserToken = r.Data;
 
             Response r4 = client.DoPutAsync(test, "/games/" + r1.Data).Result;
-            // For some reason doputasync is returning like a task.task or something
-            // I dont even know...
-            Response r5 = client.DoPutAsync(test, "/games/" + r1.Data).Result;
 
-            //Assert.AreEqual("0",r5.Data);
-            //Assert.AreEqual(Conflict, r4.Status);
+            //Wait for game to complete
+            System.Threading.Thread.Sleep(5000);
+            Response r5 = client.DoGetAsync("/games/"+r1.Data).Result;
+            Assert.AreEqual("completed",r5.Data.GameState.ToString());
+
+            r4 = client.DoPutAsync(test, "/games/"+r1.Data).Result;
+            Assert.AreEqual(Conflict,r4.Status);
         }
     }
 
+    /// <summary>
+    /// Object used for testing
+    /// </summary>
     public class TesterObject
     {
         public string UserToken { get; set; }

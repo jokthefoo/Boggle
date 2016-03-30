@@ -10,12 +10,22 @@ namespace Boggle
 {
     public class BoggleService : IBoggleService
     {
+        // Poor man's database
         /// <summary>
-        /// Poor man's database
+        /// Stores all the games
         /// </summary>
         private readonly static List<Game> games = new List<Game>();
+        /// <summary>
+        /// Stores all the users
+        /// </summary>
         private readonly static List<User> users = new List<User>();
+        /// <summary>
+        /// Keeps track of the currently pending game
+        /// </summary>
         private readonly static PendingGame pendingGame = new PendingGame();
+        /// <summary>
+        /// Object used for syncing threads
+        /// </summary>
         private static readonly object sync = new object();
 
         /// <summary>
@@ -40,7 +50,11 @@ namespace Boggle
         }
 
         /// <summary>
-        /// Cancels pending join request
+        /// Cancel a pending request to join a game.
+        /// 
+        /// If UserToken is invalid or is not a player in the pending game, responds with status 403 (Forbidden).
+        /// 
+        /// Otherwise, removes UserToken from the pending game and responds with status 200 (OK).
         /// </summary>
         public void CancelJoinRequest(string UserToken)
         {
@@ -61,7 +75,12 @@ namespace Boggle
         }
 
         /// <summary>
-        /// Creates a new user
+        /// Creates a new user. 
+        /// 
+        /// If Nickname is null, or is empty when trimmed, responds with status 403 (Forbidden).
+        /// 
+        /// Otherwise, creates a new user with a unique UserToken and the trimmed Nickname. 
+        /// The returned UserToken should be used to identify the user in subsequent requests. Responds with status 201 (Created).
         /// </summary>
         public string CreateUser(string Nickname)
         {
@@ -86,24 +105,32 @@ namespace Boggle
         }
 
         /// <summary>
-        /// Gets a games status
+        /// Get game status information.
+        /// 
+        /// If GameID is invalid, responds with status 403 (Forbidden).
+        /// 
+        /// Otherwise, returns information about the game named by GameID as illustrated below. 
+        /// Note that the information returned depends on whether "Brief=yes" was included as a 
+        /// parameter as well as on the state of the game. Responds with status code 200 (OK). 
+        /// Note: The Board and Words are not case sensitive.
         /// </summary>
         public Game GameStatus(string GameID, string Brief)
         {
-            if (pendingGame.GameID.ToString() == GameID)
-            {
-                Game temp = new Game();
-                temp.GameState = "pending";
-                return temp;
-            }
-
-            Game currentGame = new Game();
-            Game tempGame = new Game();
             lock (sync)
             {
+                if (pendingGame.GameID.ToString() == GameID)
+                {
+                    Game temp = new Game();
+                    temp.GameState = "pending";
+                    return temp;
+                }
+
+                Game currentGame = new Game();
+                Game tempGame = new Game();
+
                 currentGame = LookupGameID(GameID);
 
-                if(currentGame == null)
+                if (currentGame == null)
                 {
                     SetStatus(Forbidden);
                     return null;
@@ -114,61 +141,75 @@ namespace Boggle
                 {
                     currentGame.TimeLeft = Convert.ToInt32(currentGame.StartTime + currentGame.TimeLimit - DateTime.Now.TimeOfDay.TotalSeconds);
                 }
-                else {
+                else
+                {
                     currentGame.TimeLeft = 0;
                     currentGame.GameState = "completed";
                 }
-            }
 
 
-            if (Brief == "yes")
-            {
-                tempGame.GameState = currentGame.GameState;
-                tempGame.TimeLeft = currentGame.TimeLeft;
 
-                if (tempGame.Player1 == null)
+                if (Brief == "yes")
                 {
-                    tempGame.Player1 = new User();
+                    tempGame.GameState = currentGame.GameState;
+                    tempGame.TimeLeft = currentGame.TimeLeft;
+
+                    if (tempGame.Player1 == null)
+                    {
+                        tempGame.Player1 = new User();
+                    }
+                    if (tempGame.Player2 == null)
+                    {
+                        tempGame.Player2 = new User();
+                    }
+
+                    tempGame.Player1.score = currentGame.Player1.score;
+                    tempGame.Player2.score = currentGame.Player2.score;
                 }
-                if (tempGame.Player2 == null)
+                else if (currentGame.GameState == "active")
                 {
-                    tempGame.Player2 = new User();
+                    tempGame.GameState = currentGame.GameState;
+                    tempGame.GameBoard = currentGame.GameBoard;
+                    tempGame.TimeLimit = currentGame.TimeLimit;
+                    tempGame.TimeLeft = currentGame.TimeLeft;
+
+                    if (tempGame.Player1 == null)
+                    {
+                        tempGame.Player1 = new User();
+                    }
+                    if (tempGame.Player2 == null)
+                    {
+                        tempGame.Player2 = new User();
+                    }
+
+                    tempGame.Player1.Nickname = currentGame.Player1.Nickname;
+                    tempGame.Player1.score = currentGame.Player1.score;
+                    tempGame.Player2.Nickname = currentGame.Player2.Nickname;
+                    tempGame.Player2.score = currentGame.Player2.score;
                 }
-
-                tempGame.Player1.score = currentGame.Player1.score;
-                tempGame.Player2.score = currentGame.Player2.score;
-            }
-            else if (currentGame.GameState == "active")
-            {
-                tempGame.GameState = currentGame.GameState;
-                tempGame.GameBoard = currentGame.GameBoard;
-                tempGame.TimeLimit = currentGame.TimeLimit;
-                tempGame.TimeLeft = currentGame.TimeLeft;
-
-                if (tempGame.Player1 == null)
+                else
                 {
-                    tempGame.Player1 = new User();
-                }
-                if (tempGame.Player2 == null)
-                {
-                    tempGame.Player2 = new User();
+                    tempGame = currentGame;
                 }
 
-                tempGame.Player1.Nickname = currentGame.Player1.Nickname;
-                tempGame.Player1.score = currentGame.Player1.score;
-                tempGame.Player2.Nickname = currentGame.Player2.Nickname;
-                tempGame.Player2.score = currentGame.Player2.score;
+                return tempGame;
             }
-            else
-            {
-                tempGame = currentGame;
-            }
-
-            return tempGame;
         }
 
         /// <summary>
-        /// Joins a game
+        /// Join a game. 
+        /// 
+        /// If UserToken is invalid, TimeLimit < 5, or TimeLimit > 120, responds with status 403 (Forbidden).
+        /// 
+        /// Otherwise, if UserToken is already a player in the pending game, responds with status 409 (Conflict).
+        /// 
+        /// Otherwise, if there is already one player in the pending game, adds UserToken as the second player. 
+        /// The pending game becomes active and a new pending game with no players is created. 
+        /// The active game's time limit is the integer average of the time limits requested by the two players. 
+        /// Returns the new active game's GameID (which should be the same as the old pending game's GameID). Responds with status 201 (Created).
+        /// 
+        /// Otherwise, adds UserToken as the first player of the pending game, and the TimeLimit as the pending game's requested time limit. 
+        /// Returns the pending game's GameID. Responds with status 202 (Accepted).
         /// </summary>
         public string JoinGame(string UserToken, int TimeLimit)
         {
@@ -256,119 +297,138 @@ namespace Boggle
         }
 
         /// <summary>
-        /// Plays a word in a game
+        /// Play a word in a game.
+        /// 
+        /// If Word is null or empty when trimmed, or if GameID or UserToken is missing or invalid, 
+        /// or if UserToken is not a player in the game identified by GameID, responds with response code 403 (Forbidden).
+        /// 
+        /// Otherwise, if the game state is anything other than "active", responds with response code 409 (Conflict).
+        /// 
+        /// Otherwise, records the trimmed Word as being played by UserToken in the game identified by GameID. 
+        /// Returns the score for Word in the context of the game (e.g. if Word has been played before the score is zero). 
+        /// Responds with status 200 (OK). Note: The word is not case sensitive.
         /// </summary>
-        /// <returns></returns>
         public string PlayWord(string GameID, string UserToken, string Word)
         {
-            User tempUser = LookupUserToken(UserToken);
-            Game tempGame = LookupGameID(GameID);
-            Word = Word.Trim(' ');
-
-            if (Word == null || Word == "" || tempUser == null || tempGame == null || (UserToken != tempGame.Player1.UserToken && UserToken != tempGame.Player2.UserToken && UserToken != pendingGame.UserToken))
+            lock (sync)
             {
-                if (pendingGame.GameID.ToString() == GameID)
+                User tempUser = LookupUserToken(UserToken);
+                Game tempGame = LookupGameID(GameID);
+                Word = Word.Trim(' ');
+
+                if (Word == null || Word == "" || tempUser == null || tempGame == null || (UserToken != tempGame.Player1.UserToken && UserToken != tempGame.Player2.UserToken && UserToken != pendingGame.UserToken))
+                {
+                    if (pendingGame.GameID.ToString() == GameID)
+                    {
+                        SetStatus(Conflict);
+                        return "";
+                    }
+                    SetStatus(Forbidden);
+                    return "";
+                }
+                else if (tempGame.GameState != "active")
                 {
                     SetStatus(Conflict);
                     return "";
                 }
-                SetStatus(Forbidden);
-                return "";
-            }
-            else if (tempGame.GameState != "active")
-            {
-                SetStatus(Conflict);
-                return "";
-            }
-            else
-            {
-                SetStatus(OK);
-                BoggleBoard board = new BoggleBoard(tempGame.GameBoard);
-                int score = 0;
-                if (tempGame.Player1.PlayedWords == null)
+                else
                 {
-                    tempGame.Player1.PlayedWords = new Dictionary<string, int>();
-                }
-                if (tempGame.Player2.PlayedWords == null)
-                {
-                    tempGame.Player2.PlayedWords = new Dictionary<string, int>();
-                }
+                    SetStatus(OK);
 
-                // Check if the word can be formed in the board
-                if (board.CanBeFormed(Word))
-                {
-                    if (Word.Length < 3)
+                    BoggleBoard board = new BoggleBoard(tempGame.GameBoard);
+                    int score = 0;
+
+                    if (tempGame.Player1.PlayedWords == null)
                     {
-                        score = 0;
-                    }else if (UserToken == tempGame.Player1.UserToken)
+                        tempGame.Player1.PlayedWords = new List<Tuple<string, int>>();
+                    }
+                    if (tempGame.Player2.PlayedWords == null)
                     {
-                        foreach (string s in tempGame.Player1.PlayedWords.Keys)
+                        tempGame.Player2.PlayedWords = new List<Tuple<string, int>>();
+                    }
+
+                    // Check if the word can be formed in the board
+                    if (board.CanBeFormed(Word))
+                    {
+                        if (Word.Length < 3)
                         {
-                            if (Word.ToUpper() == s.ToUpper())
+                            score = 0;
+                        }
+                        //Check if the word has been played already
+                        else if (UserToken == tempGame.Player1.UserToken)
+                        {
+                            foreach (var s in tempGame.Player1.PlayedWords)
                             {
-                                score = 0;
-                                tempGame.Player1.PlayedWords.Add(Word, score);
-                                return score.ToString();
+                                if (Word.ToUpper() == s.Item1.ToUpper())
+                                {
+                                    score = 0;
+                                    var temp = new Tuple<string,int>(Word,score);
+                                    tempGame.Player1.PlayedWords.Add(temp);
+                                    return score.ToString();
+                                }
+                            }
+                        }
+                        else if (UserToken == tempGame.Player2.UserToken)
+                        {
+                            foreach (var s in tempGame.Player2.PlayedWords)
+                            {
+                                if (Word.ToUpper() == s.Item1.ToUpper())
+                                {
+                                    score = 0;
+                                    var temp = new Tuple<string, int>(Word, score);
+                                    tempGame.Player2.PlayedWords.Add(temp);
+                                    return score.ToString();
+                                }
+                            }
+                        }
+
+                        // Check the word in the dictionary
+                        if (Resources.dictionary.Contains(Word.ToUpper()))
+                        {
+                            switch (Word.Length)
+                            {
+                                case 3:
+                                    score = 1;
+                                    break;
+                                case 4:
+                                    score = 1;
+                                    break;
+                                case 5:
+                                    score = 2;
+                                    break;
+                                case 6:
+                                    score = 3;
+                                    break;
+                                case 7:
+                                    score = 5;
+                                    break;
+                                default:
+                                    score = 11;
+                                    break;
                             }
                         }
                     }
-                    else if (UserToken == tempGame.Player2.UserToken)
+                    else
                     {
-                        foreach (string s in tempGame.Player2.PlayedWords.Keys)
-                        {
-                            if (Word.ToUpper() == s.ToUpper())
-                            {
-                                score = 0;
-                                tempGame.Player2.PlayedWords.Add(Word, score);
-                                return score.ToString();
-                            }
-                        }
+                        score = -1;
                     }
 
-                    // Check the word in the dictionary
-                    if (Resources.dictionary.Contains(Word.ToUpper()))
+                    // Add the word and its score to the words played list
+                    if (UserToken == tempGame.Player1.UserToken)
                     {
-                        switch (Word.Length)
-                        {
-                            case 3:
-                                score = 1;
-                                break;
-                            case 4:
-                                score = 1;
-                                break;
-                            case 5:
-                                score = 2;
-                                break;
-                            case 6:
-                                score = 3;
-                                break;
-                            case 7:
-                                score = 5;
-                                break;
-                            default:
-                                score = 11;
-                                break;
-                        }
+                        var temp = new Tuple<string, int>(Word, score);
+                        tempGame.Player1.PlayedWords.Add(temp);
+                        tempGame.Player1.score += score;
                     }
-                }
-                else
-                {
-                    score = -1;
-                }
+                    else
+                    {
+                        var temp = new Tuple<string, int>(Word, score);
+                        tempGame.Player2.PlayedWords.Add(temp);
+                        tempGame.Player2.score += score;
+                    }
 
-                // Add the word and its score to the words played list
-                if (UserToken == tempGame.Player1.UserToken)
-                {
-                    tempGame.Player1.PlayedWords.Add(Word, score);
-                    tempGame.Player1.score += score;
+                    return score.ToString();
                 }
-                else
-                {
-                    tempGame.Player2.PlayedWords.Add(Word, score);
-                    tempGame.Player2.score += score;
-                }
-
-                return score.ToString();
             }
         }
     }

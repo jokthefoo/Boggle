@@ -41,7 +41,7 @@ namespace Boggle
         public string UserToken { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
-        public Dictionary<string, int> PlayedWords { get; set; }
+        public List<Tuple<string, int>> PlayedWords { get; set; }
 
         [DataMember(EmitDefaultValue = false)]
         public int? score { get; set; }
