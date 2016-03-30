@@ -353,6 +353,8 @@ namespace Boggle
             test.UserToken = r.Data;
 
             Response r4 = client.DoPutAsync(test, "/games/" + r1.Data).Result;
+            // For some reason doputasync is returning like a task.task or something
+            // I dont even know...
             Response r5 = client.DoPutAsync(test, "/games/" + r1.Data).Result;
 
             //Assert.AreEqual("0",r5.Data);
